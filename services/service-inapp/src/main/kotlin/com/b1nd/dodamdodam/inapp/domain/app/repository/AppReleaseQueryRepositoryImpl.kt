@@ -60,7 +60,7 @@ class AppReleaseQueryRepositoryImpl(
 
     private fun keywordContains(keyword: String?): BooleanExpression? =
         keyword?.takeIf { it.isNotBlank() }?.let {
-            appReleaseEntity.releaseUrl.containsIgnoreCase(it)
+            appReleaseEntity.repositoryUrl.containsIgnoreCase(it)
                 .or(appReleaseEntity.memo.containsIgnoreCase(it))
         }
 }

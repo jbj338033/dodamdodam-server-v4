@@ -6,7 +6,8 @@ import java.util.UUID
 
 data class AppReleaseResponse(
     val releaseId: UUID,
-    val releaseUrl: String,
+    val repositoryUrl: String,
+    val ref: String,
     val memo: String?,
     val denyResult: String?,
     val status: AppStatusType,

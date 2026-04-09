@@ -6,12 +6,13 @@ import java.util.UUID
 
 data class AppReleaseDetailResponse(
     val releaseId: UUID,
-    val releaseUrl: String,
+    val repositoryUrl: String,
+    val ref: String,
     val memo: String?,
     val denyResult: String?,
     val status: AppStatusType,
     val enabled: Boolean,
-    val releaseNote: String?,
+    val buildLog: String?,
     val createdAt: LocalDateTime?,
     val modifiedAt: LocalDateTime?,
 )

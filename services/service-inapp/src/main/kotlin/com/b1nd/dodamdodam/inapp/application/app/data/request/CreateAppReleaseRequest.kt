@@ -4,6 +4,7 @@ import java.util.UUID
 
 data class CreateAppReleaseRequest(
     val appId: UUID,
-    val releaseUrl: String,
+    val repositoryUrl: String,
+    val ref: String = "main",
     val memo: String? = null,
 )

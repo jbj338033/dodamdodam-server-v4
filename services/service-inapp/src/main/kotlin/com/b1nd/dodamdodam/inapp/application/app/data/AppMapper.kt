@@ -17,7 +17,8 @@ import java.util.UUID
 
 fun AppReleaseEntity.toResponse(userMap: Map<UUID, UserResponse>) = AppReleaseResponse(
     releaseId = publicId!!,
-    releaseUrl = releaseUrl,
+    repositoryUrl = repositoryUrl,
+    ref = ref,
     memo = memo,
     denyResult = denyResult,
     status = status,
@@ -35,14 +36,15 @@ fun AppReleaseEntity.toResponse(userMap: Map<UUID, UserResponse>) = AppReleaseRe
 
 fun List<AppReleaseEntity>.toResponses(userMap: Map<UUID, UserResponse>) = map { it.toResponse(userMap) }
 
-fun AppReleaseEntity.toDetailResponse(releaseNote: String?) = AppReleaseDetailResponse(
+fun AppReleaseEntity.toDetailResponse() = AppReleaseDetailResponse(
     releaseId = publicId!!,
-    releaseUrl = releaseUrl,
+    repositoryUrl = repositoryUrl,
+    ref = ref,
     memo = memo,
     denyResult = denyResult,
     status = status,
     enabled = enabled,
-    releaseNote = releaseNote,
+    buildLog = buildLog,
     createdAt = createdAt,
     modifiedAt = modifiedAt,
 )
@@ -107,7 +109,8 @@ fun CreateAppRequest.toCommand() = CreateAppCommand(
     iconUrl = iconUrl,
     darkIconUrl = darkIconUrl,
     inquiryMail = inquiryMail,
-    githubReleaseUrl = githubReleaseUrl,
+    repositoryUrl = repositoryUrl,
+    ref = ref,
 )
 
 fun EditAppRequest.toCommand() = EditAppCommand(
