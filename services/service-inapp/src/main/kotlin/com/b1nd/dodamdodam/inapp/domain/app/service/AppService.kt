@@ -82,10 +82,7 @@ class AppService(
         }
         if (status == AppStatusType.DENIED) requireDenyReason(denyResult)
         val release = getRelease(releaseId)
-        if (release.status !in setOf(AppStatusType.BUILD_SUCCESS, AppStatusType.BUILD_FAILED)) {
-            throw AppInvalidReleaseStatusException()
-        }
-        if (status == AppStatusType.ALLOWED && release.status != AppStatusType.BUILD_SUCCESS) {
+        if (release.status != AppStatusType.BUILD_SUCCESS) {
             throw AppReleaseNotBuiltException()
         }
         release.updateStatus(status, denyResult, userId)
