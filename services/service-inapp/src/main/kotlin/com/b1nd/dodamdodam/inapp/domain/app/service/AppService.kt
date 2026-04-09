@@ -7,8 +7,10 @@ import com.b1nd.dodamdodam.inapp.domain.app.entity.AppReleaseEntity
 import com.b1nd.dodamdodam.inapp.domain.app.enumeration.AppStatusType
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppAlreadyExistException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppDenyReasonRequiredException
+import com.b1nd.dodamdodam.inapp.domain.app.exception.AppInvalidReleaseStatusException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppNotFoundException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppReleaseEnableNotAllowedException
+import com.b1nd.dodamdodam.inapp.domain.app.exception.AppReleaseNotBuiltException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppReleaseNotFoundException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppTeamMemberPermissionRequiredException
 import com.b1nd.dodamdodam.inapp.domain.app.exception.AppTeamOwnerPermissionRequiredException
@@ -41,45 +43,64 @@ class AppService(
         if (existByName(command.name)) throw AppAlreadyExistException()
         val team = getTeamWithMemberPermission(userId, command.teamId)
         val app = appRepository.save(command.toEntity(team))
-        appReleaseRepository.save(
+        val release = appReleaseRepository.save(
             AppReleaseEntity(
                 app = app,
                 enabled = false,
-                releaseUrl = command.githubReleaseUrl,
+                repositoryUrl = command.repositoryUrl,
+                ref = command.ref,
                 updatedUser = userId,
-                status = AppStatusType.PENDING
+                status = AppStatusType.BUILDING
             )
         )
-        app.updateReleaseInfo(enabled = false, status = AppStatusType.PENDING)
+        app.updateReleaseInfo(enabled = false, status = AppStatusType.BUILDING)
+        appReleaseActivatedEventProducer.publishActivated(release)
         return app.publicId!!
     }
 
-    fun createRelease(userId: UUID, appId: UUID, releaseUrl: String, memo: String?): UUID {
+    fun createRelease(userId: UUID, appId: UUID, repositoryUrl: String, ref: String, memo: String?): UUID {
         val app = getAppWithMemberPermission(userId, appId)
         val release = appReleaseRepository.save(
             AppReleaseEntity(
                 app = app,
                 enabled = false,
-                releaseUrl = releaseUrl,
+                repositoryUrl = repositoryUrl,
+                ref = ref,
                 updatedUser = userId,
                 memo = memo,
-                status = AppStatusType.PENDING
+                status = AppStatusType.BUILDING
             )
         )
+        app.updateReleaseInfo(enabled = false, status = AppStatusType.BUILDING)
+        appReleaseActivatedEventProducer.publishActivated(release)
         return release.publicId!!
     }
 
     fun updateReleaseStatus(userId: UUID, releaseId: UUID, status: AppStatusType, denyResult: String?) {
+        if (status !in setOf(AppStatusType.ALLOWED, AppStatusType.DENIED)) {
+            throw AppInvalidReleaseStatusException()
+        }
         if (status == AppStatusType.DENIED) requireDenyReason(denyResult)
         val release = getRelease(releaseId)
+        if (release.status !in setOf(AppStatusType.BUILD_SUCCESS, AppStatusType.BUILD_FAILED)) {
+            throw AppInvalidReleaseStatusException()
+        }
+        if (status == AppStatusType.ALLOWED && release.status != AppStatusType.BUILD_SUCCESS) {
+            throw AppReleaseNotBuiltException()
+        }
         release.updateStatus(status, denyResult, userId)
         if (status == AppStatusType.ALLOWED) {
             appReleaseRepository.findAllByAppAndEnabledIsTrue(release.app)
                 .filter { it.id != release.id }
                 .forEach { it.updateEnabled(false, userId) }
             release.updateEnabled(true, userId)
-            appReleaseActivatedEventProducer.publishActivated(release)
         }
+        release.app.updateReleaseInfo(enabled = release.enabled, status = release.status)
+    }
+
+    fun handleBuildResult(releaseId: UUID, success: Boolean, buildLog: String?) {
+        val release = getRelease(releaseId)
+        release.updateBuildResult(success, buildLog)
         release.app.updateReleaseInfo(enabled = release.enabled, status = release.status)
     }
 
@@ -99,9 +120,6 @@ class AppService(
         }
         release.updateEnabled(enabled, userId)
         release.app.updateReleaseInfo(enabled = release.enabled, status = release.status)
-        if (enabled) {
-            appReleaseActivatedEventProducer.publishActivated(release)
-        }
     }
 
     fun getReleases(userId: UUID, appId: UUID, date: LocalDate?, keyword: String?, pageable: Pageable): Page<AppReleaseEntity> {

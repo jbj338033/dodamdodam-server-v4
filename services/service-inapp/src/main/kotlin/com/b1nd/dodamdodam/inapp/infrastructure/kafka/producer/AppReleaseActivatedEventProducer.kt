@@ -18,7 +18,8 @@ class AppReleaseActivatedEventProducer(
                 appPublicId = release.app.publicId!!,
                 releasePublicId = release.publicId!!,
                 appName = release.app.name,
-                githubReleaseUrl = release.releaseUrl,
+                repositoryUrl = release.repositoryUrl,
+                ref = release.ref,
             )
         )
     }

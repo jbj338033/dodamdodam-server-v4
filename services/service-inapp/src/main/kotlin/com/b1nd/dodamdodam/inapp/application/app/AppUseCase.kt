@@ -16,7 +16,6 @@ import com.b1nd.dodamdodam.inapp.application.app.data.response.AppReleaseRespons
 import com.b1nd.dodamdodam.inapp.application.app.data.response.AppReleaseDetailResponse
 import com.b1nd.dodamdodam.inapp.application.app.data.response.AppResponse
 import com.b1nd.dodamdodam.inapp.application.app.data.response.AppSummaryResponse
-import com.b1nd.dodamdodam.core.github.client.GitHubClient
 import com.b1nd.dodamdodam.inapp.application.app.data.toActiveAppResponse
 import com.b1nd.dodamdodam.inapp.application.app.data.toCommand
 import com.b1nd.dodamdodam.inapp.application.app.data.toDetailResponse
@@ -38,7 +37,6 @@ class AppUseCase(
     private val appService: AppService,
     private val userQueryClient: UserQueryClient,
     private val inAppProperties: InAppProperties,
-    private val gitHubClient: GitHubClient,
 ) {
     fun createApp(request: CreateAppRequest): Response<AppResponse> {
         val appId = appService.create(currentUserId(), request.toCommand())
@@ -46,7 +44,7 @@ class AppUseCase(
     }
 
     fun createRelease(request: CreateAppReleaseRequest): Response<Any> {
-        val releaseId = appService.createRelease(currentUserId(), request.appId, request.releaseUrl, request.memo)
+        val releaseId = appService.createRelease(currentUserId(), request.appId, request.repositoryUrl, request.ref, request.memo)
         return Response.created("릴리즈가 등록되었어요.", mapOf("releaseId" to releaseId))
     }
 
@@ -107,11 +105,7 @@ class AppUseCase(
     @Transactional(readOnly = true)
     fun getReleaseDetail(releaseId: UUID): Response<AppReleaseDetailResponse> {
         val release = appService.getRelease(releaseId)
-        val releaseNote = runCatching {
-            val info = GitHubClient.parseGitHubReleaseUrl(release.releaseUrl)
-            gitHubClient.getReleaseNote(info.owner, info.repo, info.tag)
-        }.getOrNull()
-        return Response.ok("릴리즈 상세를 조회했어요.", release.toDetailResponse(releaseNote))
+        return Response.ok("릴리즈 상세를 조회했어요.", release.toDetailResponse())
     }
 
     fun deleteApp(appId: UUID): Response<Any> {
