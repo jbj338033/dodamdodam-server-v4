@@ -5,6 +5,7 @@ object KafkaTopics {
     const val USER_UPDATED = "user.updated"
 const val APP_API_KEY_CREATED = "app.api-key.created"
     const val APP_RELEASE_ACTIVATED = "app.release.activated"
+    const val APP_BUILD_RESULT = "app.build.result"
     const val NOTIFICATION_SEND = "notification.send"
     const val NOTIFICATION_FAILED = "notification.failed"
 }

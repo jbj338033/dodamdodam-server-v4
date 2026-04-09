@@ -5,11 +5,10 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class AppReleaseActivatedEvent(
+data class AppBuildResultEvent(
     val appPublicId: UUID,
     val releasePublicId: UUID,
-    val appName: String,
-    val repositoryUrl: String,
-    val ref: String,
+    val success: Boolean,
+    val buildLog: String?,
     val occurredAt: LocalDateTime = LocalDateTime.now(),
 )
