@@ -21,4 +21,8 @@ dependencies {
     // aws s3
     implementation(platform("software.amazon.awssdk:bom:2.42.9"))
     implementation("software.amazon.awssdk:s3")
+
+    // docker
+    implementation("com.github.docker-java:docker-java-core:3.4.1")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.4.1")
 }
