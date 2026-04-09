@@ -15,3 +15,7 @@ class AppDenyReasonRequiredException: BasicException(AppExceptionCode.APP_DENY_R
 class AppTeamMemberPermissionRequiredException: BasicException(AppExceptionCode.APP_TEAM_MEMBER_PERMISSION_REQUIRED)
 
 class AppTeamOwnerPermissionRequiredException: BasicException(AppExceptionCode.APP_TEAM_OWNER_PERMISSION_REQUIRED)
+
+class AppInvalidReleaseStatusException: BasicException(AppExceptionCode.APP_INVALID_RELEASE_STATUS)
+
+class AppReleaseNotBuiltException: BasicException(AppExceptionCode.APP_RELEASE_NOT_BUILT)

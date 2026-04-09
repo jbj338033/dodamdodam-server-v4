@@ -4,4 +4,7 @@ enum class AppStatusType {
     ALLOWED,
     PENDING,
     DENIED,
+    BUILDING,
+    BUILD_SUCCESS,
+    BUILD_FAILED,
 }

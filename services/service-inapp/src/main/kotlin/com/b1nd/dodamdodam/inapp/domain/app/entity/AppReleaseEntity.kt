@@ -24,14 +24,18 @@ class AppReleaseEntity(
     val app: AppEntity,
 
     var enabled: Boolean,
-    @Column(nullable = false, columnDefinition = "TEXT")
-    val releaseUrl: String,
+    @Column(name = "repository_url", nullable = false, columnDefinition = "TEXT")
+    val repositoryUrl: String,
+    @Column(nullable = false)
+    val ref: String = "main",
     @Column(name = "fk_user_id")
     var updatedUser: UUID,
     @Column(columnDefinition = "TEXT")
     var memo: String? = null,
     @Column(columnDefinition = "TEXT")
     var denyResult: String? = null,
+    @Column(columnDefinition = "TEXT")
+    var buildLog: String? = null,
     @Enumerated(EnumType.STRING)
     var status: AppStatusType
 ): BaseTimeEntity() {
@@ -53,6 +57,23 @@ class AppReleaseEntity(
         this.denyResult = denyResult
         this.updatedUser = updatedUser
         if (status != AppStatusType.ALLOWED) {
+            this.enabled = false
+        }
+    }
+
+    fun markAsBuilding(updatedUser: UUID) {
+        this.status = AppStatusType.BUILDING
+        this.enabled = false
+        this.updatedUser = updatedUser
+    }
+
+    fun updateBuildResult(success: Boolean, buildLog: String?) {
+        this.buildLog = buildLog
+        if (success) {
+            this.status = AppStatusType.BUILD_SUCCESS
+            this.enabled = false
+        } else {
+            this.status = AppStatusType.BUILD_FAILED
             this.enabled = false
         }
     }

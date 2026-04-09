@@ -14,5 +14,7 @@ enum class AppExceptionCode(
     APP_DENY_REASON_REQUIRED(HttpStatus.BAD_REQUEST, "거절 사유는 필수예요."),
     APP_TEAM_MEMBER_PERMISSION_REQUIRED(HttpStatus.FORBIDDEN, "앱을 관리할 팀원 권한이 필요해요."),
     APP_TEAM_OWNER_PERMISSION_REQUIRED(HttpStatus.FORBIDDEN, "앱을 관리할 팀 오너 권한이 필요해요."),
+    APP_INVALID_RELEASE_STATUS(HttpStatus.BAD_REQUEST, "허용되지 않는 릴리즈 상태예요."),
+    APP_RELEASE_NOT_BUILT(HttpStatus.BAD_REQUEST, "빌드 성공한 릴리즈만 승인할 수 있어요."),
     ;
 }
